@@ -1,0 +1,27 @@
+{
+  "name": "markdown-links",
+  "version": "1.0.0",
+  "description": "A npm package to find links inside markdown files",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luucamay/markdown-links.git"
+  },
+  "keywords": [
+    "node",
+    "javascript",
+    "npm"
+  ],
+  "author": "Lupe Canaviri Maydana lupemaydana@gmail.com",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/luucamay/markdown-links/issues"
+  },
+  "homepage": "https://github.com/luucamay/markdown-links#readme"
+}
