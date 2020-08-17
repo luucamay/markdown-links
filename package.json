@@ -23,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/luucamay/markdown-links/issues"
   },
-  "homepage": "https://github.com/luucamay/markdown-links#readme"
+  "homepage": "https://github.com/luucamay/markdown-links#readme",
+  "bin": {
+    "md-links": "index.js"
+  }
 }
