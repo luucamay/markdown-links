@@ -1,3 +1,15 @@
 #!/usr/bin/env node
 const mdLinks = require('../src/index');
-mdLinks('soy un path');
+
+const main = (args) => {
+  if(args.length !== 3){
+    console.info('Modo de empleo:')
+    console.info('md-links <path-to-file>');
+    return 'Something went wrong';
+  }
+
+  console.log(args);
+  mdLinks(args[2]);
+}
+
+main(process.argv);
