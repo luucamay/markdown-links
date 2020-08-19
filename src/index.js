@@ -1,6 +1,7 @@
 const pathSytem = require('path');
 const fs = require('fs');
 
+
 const isAbsolutePath = (pathToCheck) => {
   const resolvedPath = pathSytem.resolve(pathToCheck);
   const normalizedPath = pathSytem.normalize(pathToCheck);
@@ -13,6 +14,19 @@ const convertToAbosulute = (pathToConvert) => {
 }
 
 const isFolder = (pathToCheck) => fs.lstatSync(pathToCheck).isDirectory();
+const readMDFile = (pathToRead, mycallback) => {
+  fs.readFile(pathToRead, (err, data) => {
+    if(err){
+      console.error(err.message);
+      console.error(`Sorry I can't read file: ${pathToRead}`);
+    }
+    mycallback(data.toString());
+  })
+}
+const getLinks = (pathToProcess) => {
+  console.log('Getting links from file...');
+  readMDFile(pathToProcess, console.log);
+}
 
 const mdLinks = (path) => {
   console.log('iniciando funcion mdLinks');
@@ -32,6 +46,8 @@ const mdLinks = (path) => {
         return 'error code?';
       } else {
         console.log('Processing markdown file...');
+        // the next function resolves in the future
+        getLinks(path);
       }
     }
   } catch (e) {
