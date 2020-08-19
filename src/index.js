@@ -27,8 +27,12 @@ const mdLinks = (path) => {
     if(isFolder(path)){
       console.log('path is a folder');
     } else {
-      console.info('Processing markdown file...');
-
+      if(path.slice(-2) !== 'md'){
+        console.log("Sorry, I can't process a file with a extension different to .md")
+        return 'error code?';
+      } else {
+        console.log('Processing markdown file...');
+      }
     }
   } catch (e) {
     console.error(e.message);
