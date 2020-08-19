@@ -1,5 +1,6 @@
 const pathSytem = require('path');
 const fs = require('fs');
+const marked = require('marked');
 
 const isAbsolutePath = (pathToCheck) => {
   const resolvedPath = pathSytem.resolve(pathToCheck);
@@ -14,24 +15,58 @@ const convertToAbosulute = (pathToConvert) => {
 
 const isFolder = (pathToCheck) => fs.lstatSync(pathToCheck).isDirectory();
 
+const processMarkdownFile = (pathToRead, mycallback) => {
+  console.log('Processing markdown file...');
+  fs.readFile(pathToRead, (err, data) => {
+    if (err) {
+      console.error(err.message);
+      console.error(`Sorry I can't read file: ${pathToRead}`);
+    }
+    const linksArray= getLinks(data.toString());
+    //console.log(linksArray);
+    return mycallback(linksArray);
+  })
+}
+
+const getLinks = (markdownText) => {
+  var links = [];
+  var renderer = new marked.Renderer();
+  renderer.link = function (href, title, text) {
+    links.push({href, text});
+  };
+  // here is where the marked functions creates an html file
+  // from a markdown text and when it is rendering the links
+  // it pushes them to my links array and place undefined in that place
+  marked(markdownText, { renderer });
+  return links;
+}
+
+const printResults = (linksArray) => {
+  linksArray.forEach(linkObj => {
+    const textTruncated =  linkObj.text.substring(0, 50);;
+    console.log('filename', linkObj.href, textTruncated);
+  });
+}
+
 const mdLinks = (path) => {
   console.log('iniciando funcion mdLinks');
   console.log(`Getting absolute path of ${path}...`);
 
-  if(!isAbsolutePath(path)){
+  if (!isAbsolutePath(path)) {
     path = convertToAbosulute(path);
   }
 
   console.info(`is ${path} file or folder?`);
   try {
-    if(isFolder(path)){
+    if (isFolder(path)) {
       console.log('path is a folder');
     } else {
-      if(path.slice(-2) !== 'md'){
+      if (path.slice(-2) !== 'md') {
         console.log("Sorry, I can't process a file with a extension different to .md")
         return 'error code?';
       } else {
-        console.log('Processing markdown file...');
+        // the next function resolves in the future
+        processMarkdownFile(path, printResults);
       }
     }
   } catch (e) {
