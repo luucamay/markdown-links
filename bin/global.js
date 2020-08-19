@@ -8,7 +8,6 @@ const main = (args) => {
     return 'Something went wrong';
   }
 
-  console.log(args);
   mdLinks(args[2]);
 }
 
