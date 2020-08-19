@@ -24,7 +24,7 @@ const processMarkdownFile = (pathToRead, mycallback) => {
     }
     const linksArray= getLinks(data.toString());
     //console.log(linksArray);
-    return mycallback(linksArray);
+    return mycallback(pathToRead, linksArray);
   })
 }
 
@@ -41,11 +41,13 @@ const getLinks = (markdownText) => {
   return links;
 }
 
-const printResults = (linksArray) => {
+const printResults = (pathName, linksArray) => {
+  pathName = pathSytem.basename(pathName);
   linksArray.forEach(linkObj => {
-    const textTruncated =  linkObj.text.substring(0, 50);;
-    console.log('filename', linkObj.href, textTruncated);
+    const textTruncated =  linkObj.text.substring(0, 50);
+    console.log(pathName, linkObj.href, textTruncated);
   });
+  console.log('Finishing function :)');
 }
 
 const mdLinks = (path) => {
@@ -74,8 +76,6 @@ const mdLinks = (path) => {
     console.info('Please provide a valid PATH');
     return 'Error code?';
   }
-
-  console.log('finishing md-links function');
   return 'Success code?';
 }
 
