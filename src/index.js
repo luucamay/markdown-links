@@ -4,13 +4,12 @@ const { promises: filesystem } = require("fs");
 const marked = require('marked');
 const readdirp = require('readdirp');
 
-const isAbsolutePath = (pathToCheck) => {
-  const resolvedPath = pathSytem.resolve(pathToCheck);
-  const normalizedPath = pathSytem.normalize(pathToCheck);
-  return resolvedPath === normalizedPath;
-}
-
 const convertToAbosulute = (pathToConvert) => {
+  if (typeof pathToConvert !== 'string'){
+    console.log('Path provided is not a string');
+    return '';
+  }
+
   const resolvedPath = pathSytem.resolve(pathToConvert);
   return resolvedPath;
 }
@@ -77,14 +76,18 @@ const processAllFiles = (allFiles) => {
 }
 
 const mdLinks = (path) => {
-  console.log('iniciando funcion mdLinks');
-  console.log(`Getting absolute path of ${path}...`);
+  console.log('Iniciando funcion mdLinks');
+  console.log(`Getting absolute path ...`);
 
-  if (!isAbsolutePath(path)) {
-    path = convertToAbosulute(path);
+  path = convertToAbosulute(path);
+
+  if(path === ''){
+    console.log('Please use a valid path');
+    return 'error code?';
   }
 
   console.info(`is ${path} file or folder?`);
+
   try {
     if (isFolder(path)) {
       console.log('path is a folder');
