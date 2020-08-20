@@ -3,9 +3,10 @@ const fs = require('fs');
 const { promises: filesystem } = require("fs");
 const marked = require('marked');
 const readdirp = require('readdirp');
+const got = require('got');
 
 const convertToAbosulute = (pathToConvert) => {
-  if (typeof pathToConvert !== 'string'){
+  if (typeof pathToConvert !== 'string') {
     console.log('Path provided is not a string');
     return '';
   }
@@ -15,15 +16,45 @@ const convertToAbosulute = (pathToConvert) => {
 }
 
 const isFolder = (pathToCheck) => fs.lstatSync(pathToCheck).isDirectory();
+const httpCallback = (response) => {
+  let str = '';
 
-const processMarkdownFile = (pathToRead, mycallback) => {
+  //another chunk of data has been received, so append it to `str`
+  response.on('data', function (chunk) {
+    str += chunk;
+  });
+
+  //the whole response has been received, so we just print it out here
+  response.on('end', function () {
+    console.log(str);
+  });
+}
+const validateLinks = (linksObjArr) => {
+  console.log('validating links...')
+  linksObjArr.forEach((linkObj) => {
+
+    got(linkObj.href).then(response => {
+      //console.log(response);
+      linkObj.statusCode = response.statusCode
+      console.log(linkObj.statusCode);
+    }).catch(error => {
+      console.log(error.message);
+    });
+
+  });
+}
+
+const processMarkdownFile = (pathToRead, mycallback, validate = false) => {
   fs.readFile(pathToRead, (err, data) => {
     if (err) {
       console.error(err.message);
       console.error(`Sorry I can't read file: ${pathToRead}`);
     }
     const linksArray = getLinks(data.toString());
-    //console.log(linksArray);
+    // console.log(linksArray);
+    if (validate) {
+      validateLinks(linksArray);
+    }
     return mycallback(pathToRead, linksArray);
   })
 }
@@ -75,18 +106,16 @@ const processAllFiles = (allFiles) => {
   allFiles.forEach(file => processMarkdownFile(file, printResults));
 }
 
-const mdLinks = (path, options = { validate:false }) => {
+const mdLinks = (path, options = { validate: false }) => {
   console.log('Iniciando funcion mdLinks');
 
   console.log(`Getting absolute path ...`);
   path = convertToAbosulute(path);
 
-  if(path === ''){
+  if (path === '') {
     console.log('Please use a valid path');
     return 'error code?';
   }
-
-  console.log('option validate', options.validate);
 
   console.info(`is ${path} file or folder?`);
 
@@ -100,7 +129,7 @@ const mdLinks = (path, options = { validate:false }) => {
         return 'error code?';
       }
       // the next function resolves in the future
-      processMarkdownFile(path, printResults);
+      processMarkdownFile(path, printResults, options.validate);
     }
   } catch (e) {
     console.error(e.message);
