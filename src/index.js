@@ -75,16 +75,18 @@ const processAllFiles = (allFiles) => {
   allFiles.forEach(file => processMarkdownFile(file, printResults));
 }
 
-const mdLinks = (path) => {
+const mdLinks = (path, options = { validate:false }) => {
   console.log('Iniciando funcion mdLinks');
-  console.log(`Getting absolute path ...`);
 
+  console.log(`Getting absolute path ...`);
   path = convertToAbosulute(path);
 
   if(path === ''){
     console.log('Please use a valid path');
     return 'error code?';
   }
+
+  console.log('option validate', options.validate);
 
   console.info(`is ${path} file or folder?`);
 
