@@ -18,7 +18,6 @@ const convertToAbosulute = (pathToConvert) => {
 const isFolder = (pathToCheck) => fs.lstatSync(pathToCheck).isDirectory();
 
 const processMarkdownFile = (pathToRead, mycallback) => {
-  console.log('Processing markdown file...');
   fs.readFile(pathToRead, (err, data) => {
     if (err) {
       console.error(err.message);
@@ -44,12 +43,11 @@ const getLinks = (markdownText) => {
 }
 
 const printResults = (pathName, linksArray) => {
-  pathName = pathSytem.basename(pathName);
+  // pathName = pathSytem.basename(pathName);
   linksArray.forEach(linkObj => {
     const textTruncated = linkObj.text.substring(0, 50);
     console.log(pathName, linkObj.href, textTruncated);
   });
-  console.log('Finishing function :)');
 }
 
 const getFiles = (path, getFilesCallback) => {
@@ -57,21 +55,25 @@ const getFiles = (path, getFilesCallback) => {
   const settings = {
     fileFilter: '*.md',
     alwaysStat: true,
-    directoryFilter: [ '!.git', '!node_modules'],
+    directoryFilter: ['!.git', '!node_modules'],
   }
   readdirp(path, settings)
-  .on('data', (entry) => {
-    const filePath = entry.fullPath;
-    allFilePaths.push(filePath);
-  })
-  // Optionally call stream.destroy() in `warn()` in order to abort and cause 'close' to be emitted
-  .on('warn', error => console.error('non-fatal error', error))
-  .on('error', error => console.error('fatal error', error))
-  .on('end', () => getFilesCallback(allFilePaths));
+    .on('data', (entry) => {
+      const filePath = entry.fullPath;
+      allFilePaths.push(filePath);
+    })
+    // Optionally call stream.destroy() in `warn()` in order to abort and cause 'close' to be emitted
+    .on('warn', error => console.error('non-fatal error', error))
+    .on('error', error => console.error('fatal error', error))
+    .on('end', () => getFilesCallback(allFilePaths));
 }
 
 const processAllFiles = (allFiles) => {
-  console.log(allFiles);
+  if (allFiles.length === 0) {
+    console.log('There is no markdown files inside this folder')
+    return 'error code?'
+  }
+  allFiles.forEach(file => processMarkdownFile(file, printResults));
 }
 
 const mdLinks = (path) => {
@@ -91,10 +93,9 @@ const mdLinks = (path) => {
       if (path.slice(-2) !== 'md') {
         console.log("Sorry, I can't process a file with a extension different to .md")
         return 'error code?';
-      } else {
-        // the next function resolves in the future
-        processMarkdownFile(path, printResults);
       }
+      // the next function resolves in the future
+      processMarkdownFile(path, printResults);
     }
   } catch (e) {
     console.error(e.message);
