@@ -19,25 +19,34 @@ const isFolder = (pathToCheck) => fs.lstatSync(pathToCheck).isDirectory();
 
 const validateLinks = (linksObjArr) => {
   console.log('validating links...')
-  linksObjArr.forEach((linkObj) => {
-
-    got(linkObj.href).then(response => {
-      const statusCode = response.statusCode;
-      let status = 'fail';
-      if (statusCode === 200) {
-        status = 'ok'
-      }
-      linkObj.statusCode = statusCode;
-      linkObj.status = status;
-      console.log(linkObj);
-    }).catch(error => {
-      console.log(error.message);
+  return new Promise((fulfill, reject) => {
+    const requests = linksObjArr.map((linkObj) => {
+      const url = linkObj.href;
+      return got(url)
+        .then(response => {
+          const statusCode = response.statusCode;
+          let status = 'fail';
+          if (statusCode === 200) {
+            status = 'ok'
+          }
+          linkObj.statusCode = statusCode;
+          linkObj.status = status;
+          return linkObj;
+        })
+        .catch(error => {
+          console.log(error.message);
+          return error;
+        });
     });
 
-  });
+    Promise.all(requests)
+      .then(fulfill)
+      .catch(reject)
+  })
+
 }
 
-const processMarkdownFile = (pathToRead, mycallback, validate = false) => {
+const processMarkdownFile = (pathToRead, validate = false) => {
   return new Promise((fulfill, reject) => {
     let linksArray = [1, 2, 3];
 
@@ -50,7 +59,9 @@ const processMarkdownFile = (pathToRead, mycallback, validate = false) => {
       linksArray = getLinks(data.toString(), pathToRead);
       // console.log(linksArray);
       if (validate) {
-        validateLinks(linksArray);
+        return validateLinks(linksArray)
+          .then(fulfill)
+          .catch(reject);
       }
 
       fulfill(linksArray);
@@ -107,7 +118,7 @@ const processAllFiles = (allFiles) => {
     console.log('There is no markdown files inside this folder')
     return 'error code?'
   }
-  allFiles.forEach(file => processMarkdownFile(file, printResults));
+  allFiles.forEach(file => processMarkdownFile(file));
 }
 
 const mdLinks = (path, options = { validate: false }) => {
@@ -135,7 +146,7 @@ const mdLinks = (path, options = { validate: false }) => {
         }
 
         // the next function resolves in the future
-        processMarkdownFile(path, printResults, options.validate)
+        processMarkdownFile(path, options.validate)
           .then(linksArray => {
             resolve(linksArray);
           })
