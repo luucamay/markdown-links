@@ -25,7 +25,7 @@ const main = (args) => {
       mdLinks(args[2], options)
         .then( (data) => {
           console.log('success, promise fulfilled');
-          console.log(data);
+          // console.log(data);
         })
         .catch(e => { 
           console.log('An error occured while executing the mdLinks function. More details: ');
