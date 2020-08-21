@@ -4,6 +4,7 @@ const { promises: filesystem } = require("fs");
 const marked = require('marked');
 const readdirp = require('readdirp');
 const got = require('got');
+const { getStatus } = require('./utils');
 
 const convertToAbosulute = (pathToConvert) => {
   if (typeof pathToConvert !== 'string') {
@@ -25,16 +26,14 @@ const validateLinks = (linksObjArr) => {
       return got(url)
         .then(response => {
           const statusCode = response.statusCode;
-          let status = 'fail';
-          if (statusCode === 200) {
-            status = 'ok'
-          }
           linkObj.statusCode = statusCode;
-          linkObj.status = status;
+          linkObj.status = getStatus(statusCode);
           return linkObj;
         })
         .catch(error => {
-          console.log(error.message);
+          const statusCode = error.response.statusCode;
+          linkObj.statusCode = statusCode;
+          linkObj.status = getStatus(statusCode);
           return error;
         });
     });
