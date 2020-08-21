@@ -24,7 +24,7 @@ const validateLinks = (linksObjArr) => {
     got(linkObj.href).then(response => {
       const statusCode = response.statusCode;
       let status = 'fail';
-      if(statusCode === 200){
+      if (statusCode === 200) {
         status = 'ok'
       }
       linkObj.statusCode = statusCode;
@@ -38,25 +38,36 @@ const validateLinks = (linksObjArr) => {
 }
 
 const processMarkdownFile = (pathToRead, mycallback, validate = false) => {
-  fs.readFile(pathToRead, (err, data) => {
-    if (err) {
-      console.error(err.message);
-      console.error(`Sorry I can't read file: ${pathToRead}`);
-    }
-    const linksArray = getLinks(data.toString());
-    // console.log(linksArray);
-    if (validate) {
-      validateLinks(linksArray);
-    }
-    return mycallback(pathToRead, linksArray);
-  })
+  return new Promise((fulfill, reject) => {
+    let linksArray = [1, 2, 3];
+
+    fs.readFile(pathToRead, (err, data) => {
+      if (err) {
+        console.error(err.message);
+        console.error(`Sorry I can't read file: ${pathToRead}`);
+        return reject(err);
+      }
+      linksArray = getLinks(data.toString(), pathToRead);
+      // console.log(linksArray);
+      if (validate) {
+        validateLinks(linksArray);
+      }
+
+      fulfill(linksArray);
+      // return mycallback(pathToRead, linksArray);
+    });
+
+  });
+
 }
 
-const getLinks = (markdownText) => {
+const getLinks = (markdownText, file) => {
   var links = [];
   var renderer = new marked.Renderer();
   renderer.link = function (href, title, text) {
-    links.push({ href, text });
+    if (!href.startsWith('#')) {
+      links.push({ href, text, file });
+    }
   };
   // here is where the marked functions creates an html file
   // from a markdown text and when it is rendering the links
@@ -100,36 +111,46 @@ const processAllFiles = (allFiles) => {
 }
 
 const mdLinks = (path, options = { validate: false }) => {
-  console.log('Iniciando funcion mdLinks');
+  return new Promise((resolve, reject) => {
+    console.log('Iniciando funcion mdLinks');
 
-  console.log(`Getting absolute path ...`);
-  path = convertToAbosulute(path);
+    console.log(`Getting absolute path ...`);
+    path = convertToAbosulute(path);
 
-  if (path === '') {
-    console.log('Please use a valid path');
-    return 'error code?';
-  }
-
-  console.info(`is ${path} file or folder?`);
-
-  try {
-    if (isFolder(path)) {
-      console.log('path is a folder');
-      getFiles(path, processAllFiles);
-    } else {
-      if (path.slice(-2) !== 'md') {
-        console.log("Sorry, I can't process a file with a extension different to .md")
-        return 'error code?';
-      }
-      // the next function resolves in the future
-      processMarkdownFile(path, printResults, options.validate);
+    if (path === '') {
+      console.log('Please use a valid path');
+      reject('Invalid path');
     }
-  } catch (e) {
-    console.error(e.message);
-    console.info('Please provide a valid PATH');
-    return 'Error code?';
-  }
-  return 'Success code?';
+
+    console.info(`is ${path} file or folder?`);
+
+    try {
+      if (isFolder(path)) {
+        console.log('path is a folder');
+        getFiles(path, processAllFiles);
+      } else {
+        if (!path.endsWith('.md')) {
+          console.log("Sorry, I can't process a file with a extension different to .md")
+          reject('Invalid extension');
+        }
+
+        // the next function resolves in the future
+        processMarkdownFile(path, printResults, options.validate)
+          .then(linksArray => {
+            resolve(linksArray);
+          })
+          .catch(e => {
+            reject(e);
+          })
+      }
+    } catch (e) {
+      console.error(e.message);
+      console.info('Please provide a valid PATH');
+      reject('PATH provided does not exist')
+    }
+
+  });
+
 }
 
 module.exports = mdLinks;
