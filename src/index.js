@@ -4,6 +4,7 @@ const { promises: filesystem } = require("fs");
 const marked = require('marked');
 const readdirp = require('readdirp');
 const got = require('got');
+const { getStatus } = require('./utils');
 
 const convertToAbosulute = (pathToConvert) => {
   if (typeof pathToConvert !== 'string') {
@@ -19,27 +20,33 @@ const isFolder = (pathToCheck) => fs.lstatSync(pathToCheck).isDirectory();
 
 const validateLinks = (linksObjArr) => {
   console.log('validating links...')
-  linksObjArr.forEach((linkObj) => {
-
-    got(linkObj.href).then(response => {
-      const statusCode = response.statusCode;
-      let status = 'fail';
-      if (statusCode === 200) {
-        status = 'ok'
-      }
-      linkObj.statusCode = statusCode;
-      linkObj.status = status;
-      console.log(linkObj);
-    }).catch(error => {
-      console.log(error.message);
+  return new Promise((fulfill, reject) => {
+    const requests = linksObjArr.map((linkObj) => {
+      const url = linkObj.href;
+      return got(url)
+        .then(response => {
+          const statusCode = response.statusCode;
+          linkObj.statusCode = statusCode;
+          linkObj.status = getStatus(statusCode);
+          return linkObj;
+        })
+        .catch(error => {
+          const statusCode = error.response.statusCode;
+          linkObj.statusCode = statusCode;
+          linkObj.status = getStatus(statusCode);
+          return error;
+        });
     });
 
-  });
+    Promise.all(requests)
+      .then(fulfill)
+      .catch(reject)
+  })
+
 }
 
-const processMarkdownFile = (pathToRead, mycallback, validate = false) => {
+const processMarkdownFile = (pathToRead, options = { validate: false }, linksArray = []) => {
   return new Promise((fulfill, reject) => {
-    let linksArray = [1, 2, 3];
 
     fs.readFile(pathToRead, (err, data) => {
       if (err) {
@@ -47,10 +54,12 @@ const processMarkdownFile = (pathToRead, mycallback, validate = false) => {
         console.error(`Sorry I can't read file: ${pathToRead}`);
         return reject(err);
       }
-      linksArray = getLinks(data.toString(), pathToRead);
-      // console.log(linksArray);
-      if (validate) {
-        validateLinks(linksArray);
+      getLinks(data.toString(), pathToRead, linksArray);
+
+      if (options.validate) {
+        return validateLinks(linksArray)
+          .then(fulfill)
+          .catch(reject);
       }
 
       fulfill(linksArray);
@@ -61,8 +70,7 @@ const processMarkdownFile = (pathToRead, mycallback, validate = false) => {
 
 }
 
-const getLinks = (markdownText, file) => {
-  var links = [];
+const getLinks = (markdownText, file, links = []) => {
   var renderer = new marked.Renderer();
   renderer.link = function (href, title, text) {
     if (!href.startsWith('#')) {
@@ -84,30 +92,44 @@ const printResults = (pathName, linksArray) => {
   });
 }
 
-const getFiles = (path, getFilesCallback) => {
-  const allFilePaths = []
-  const settings = {
-    fileFilter: '*.md',
-    alwaysStat: true,
-    directoryFilter: ['!.git', '!node_modules'],
-  }
-  readdirp(path, settings)
-    .on('data', (entry) => {
-      const filePath = entry.fullPath;
-      allFilePaths.push(filePath);
-    })
-    // Optionally call stream.destroy() in `warn()` in order to abort and cause 'close' to be emitted
-    .on('warn', error => console.error('non-fatal error', error))
-    .on('error', error => console.error('fatal error', error))
-    .on('end', () => getFilesCallback(allFilePaths));
+const getFiles = (path) => {
+  return new Promise((resolveGetFiles, rejectGetFiles) => {
+    const allFilePaths = []
+    const settings = {
+      fileFilter: '*.md',
+      alwaysStat: true,
+      directoryFilter: ['!.git', '!node_modules'],
+    }
+    readdirp(path, settings)
+      .on('data', (entry) => {
+        const filePath = entry.fullPath;
+        allFilePaths.push(filePath);
+      })
+      // Optionally call stream.destroy() in `warn()` in order to abort and cause 'close' to be emitted
+      .on('warn', error => console.error('non-fatal error', error))
+      .on('error', error => {
+        console.error('fatal error', error);
+        rejectGetFiles(error);
+      })
+      .on('end', () => resolveGetFiles(allFilePaths));
+  });
 }
 
-const processAllFiles = (allFiles) => {
-  if (allFiles.length === 0) {
-    console.log('There is no markdown files inside this folder')
-    return 'error code?'
-  }
-  allFiles.forEach(file => processMarkdownFile(file, printResults));
+const processAllFiles = (allFiles, options = { validate: false }) => {
+  // here allFiles is the first time you get an array of markdown files
+  return new Promise((resolveProcessFiles, rejectProcessFiles) => {
+    if (allFiles.length === 0) {
+      const error = { 'message': 'There is no markdown files inside this folder' };
+      return rejectProcessFiles(error);
+    }
+    const mdlinksObjectsArray = [];
+    const processingFiles = allFiles.map(file => processMarkdownFile(file, options, mdlinksObjectsArray));
+
+    Promise.all(processingFiles).then((filesobjects) => {
+      // console.log(mdlinksObjectsArray);
+      resolveProcessFiles(mdlinksObjectsArray)
+    });
+  });
 }
 
 const mdLinks = (path, options = { validate: false }) => {
@@ -127,7 +149,15 @@ const mdLinks = (path, options = { validate: false }) => {
     try {
       if (isFolder(path)) {
         console.log('path is a folder');
-        getFiles(path, processAllFiles);
+        getFiles(path)
+          .then((arrayFilePaths) => {
+            // console.log(arrayFilePaths);
+            return processAllFiles(arrayFilePaths, options);
+          })
+          .then((mdLinksArray) => {
+            console.log(mdLinksArray);
+            resolve(mdLinksArray);
+          });
       } else {
         if (!path.endsWith('.md')) {
           console.log("Sorry, I can't process a file with a extension different to .md")
@@ -135,8 +165,9 @@ const mdLinks = (path, options = { validate: false }) => {
         }
 
         // the next function resolves in the future
-        processMarkdownFile(path, printResults, options.validate)
+        processMarkdownFile(path, options)
           .then(linksArray => {
+            console.log(linksArray);
             resolve(linksArray);
           })
           .catch(e => {
