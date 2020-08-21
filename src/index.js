@@ -16,27 +16,20 @@ const convertToAbosulute = (pathToConvert) => {
 }
 
 const isFolder = (pathToCheck) => fs.lstatSync(pathToCheck).isDirectory();
-const httpCallback = (response) => {
-  let str = '';
 
-  //another chunk of data has been received, so append it to `str`
-  response.on('data', function (chunk) {
-    str += chunk;
-  });
-
-  //the whole response has been received, so we just print it out here
-  response.on('end', function () {
-    console.log(str);
-  });
-}
 const validateLinks = (linksObjArr) => {
   console.log('validating links...')
   linksObjArr.forEach((linkObj) => {
 
     got(linkObj.href).then(response => {
-      //console.log(response);
-      linkObj.statusCode = response.statusCode
-      console.log(linkObj.statusCode);
+      const statusCode = response.statusCode;
+      let status = 'fail';
+      if(statusCode === 200){
+        status = 'ok'
+      }
+      linkObj.statusCode = statusCode;
+      linkObj.status = status;
+      console.log(linkObj);
     }).catch(error => {
       console.log(error.message);
     });
