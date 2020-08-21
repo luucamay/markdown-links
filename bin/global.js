@@ -8,24 +8,30 @@ const main = (args) => {
     console.info('Modo de empleo:')
     console.info('md-links <path-to-file> [options]');
     return 'Something went wrong';
-  } else if (numArgs === 3) {
-    mdLinks(args[2]);
+  } else {
+      const options = {
+        validate: false
+      }
+      const validArguments = ['validate'];
+      for (let i = 3; i < numArgs; i++) {
+        const option = args[i].substring(2);
+        if (!validArguments.includes(option)) {
+          console.log(`${option} is an invalid argument. You can use --validate and/or --stats`);
+          return 'Something went wrong';
+        }
+        options[option] = true;
+      }
+
+      mdLinks(args[2], options)
+        .then( (data) => {
+          console.log('success, promise fulfilled');
+          console.log(data);
+        })
+        .catch(e => { 
+          console.log('An error occured while executing the mdLinks function. More details: ');
+          console.log(e.message) });
   }
 
-  const options = {
-    validate: false
-  }
-  const validArguments = ['validate'];
-  for (let i = 3; i < numArgs; i++) {
-    const option = args[i].substring(2);
-    if(!validArguments.includes(option)){
-      console.log(`${option} is an invalid argument. You can use --validate and/or --stats`);
-      return 'Something went wrong';
-    }
-    options[option] = true
-  }
-
-  mdLinks(args[2], options);
 }
 
 main(process.argv);
