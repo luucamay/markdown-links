@@ -1,6 +1,5 @@
 const getStatus = (statCode) => {
   const numDigits = statCode.toString().length;
-  console.log(statCode);
   if (numDigits !== 3)
     return 'not valid status code';
 
