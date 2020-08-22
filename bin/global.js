@@ -10,6 +10,16 @@ const countUniqueLinks = (linkObjectsArray) => {
   return setLinks.size;
 }
 
+const countBrokenLinks = (linkObjectsArray) => {
+  let count = 0;
+  linkObjectsArray.forEach((linkObj) => {
+    if(linkObj.status === 'fail'){
+      count++;
+    }
+  });
+  return count;
+}
+
 const cliPrintResults = (linksArray, options = {}) => {
   const { validate, stats } = options;
   if (stats) {
@@ -17,6 +27,10 @@ const cliPrintResults = (linksArray, options = {}) => {
     const unique = countUniqueLinks(linksArray);
     console.log('total:', total);
     console.log('unique:', unique);
+    if(validate) {
+      const broken = countBrokenLinks(linksArray);
+      console.log('broken: ', broken);
+    }
   } else {
     linksArray.forEach(linkElement => {
       if (validate)
