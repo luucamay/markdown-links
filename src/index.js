@@ -45,7 +45,7 @@ const validateLinks = (linksObjArr) => {
 
 }
 
-const processMarkdownFile = (pathToRead, options = { validate: false }, linksArray = []) => {
+const processMarkdownFile = (pathToRead, options = {}, linksArray = []) => {
   return new Promise((fulfill, reject) => {
 
     fs.readFile(pathToRead, (err, data) => {
@@ -74,6 +74,7 @@ const getLinks = (markdownText, file, links = []) => {
   var renderer = new marked.Renderer();
   renderer.link = function (href, title, text) {
     if (!href.startsWith('#')) {
+      text = text.substring(0, 50);
       links.push({ href, text, file });
     }
   };
@@ -82,14 +83,6 @@ const getLinks = (markdownText, file, links = []) => {
   // it pushes them to my links array and place undefined in that place
   marked(markdownText, { renderer });
   return links;
-}
-
-const printResults = (pathName, linksArray) => {
-  // pathName = pathSytem.basename(pathName);
-  linksArray.forEach(linkObj => {
-    const textTruncated = linkObj.text.substring(0, 50);
-    console.log(pathName, linkObj.href, textTruncated);
-  });
 }
 
 const getFiles = (path) => {
@@ -115,7 +108,7 @@ const getFiles = (path) => {
   });
 }
 
-const processAllFiles = (allFiles, options = { validate: false }) => {
+const processAllFiles = (allFiles, options = {}) => {
   // here allFiles is the first time you get an array of markdown files
   return new Promise((resolveProcessFiles, rejectProcessFiles) => {
     if (allFiles.length === 0) {
@@ -132,7 +125,7 @@ const processAllFiles = (allFiles, options = { validate: false }) => {
   });
 }
 
-const mdLinks = (path, options = { validate: false }) => {
+const mdLinks = (path, options = {}) => {
   return new Promise((resolve, reject) => {
     console.log('Iniciando funcion mdLinks');
 
@@ -155,7 +148,6 @@ const mdLinks = (path, options = { validate: false }) => {
             return processAllFiles(arrayFilePaths, options);
           })
           .then((mdLinksArray) => {
-            console.log(mdLinksArray);
             resolve(mdLinksArray);
           });
       } else {
@@ -167,7 +159,6 @@ const mdLinks = (path, options = { validate: false }) => {
         // the next function resolves in the future
         processMarkdownFile(path, options)
           .then(linksArray => {
-            console.log(linksArray);
             resolve(linksArray);
           })
           .catch(e => {
