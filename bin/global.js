@@ -1,16 +1,30 @@
 #!/usr/bin/env node
 const mdLinks = require('../src/index');
 
+const countUniqueLinks = (linkObjectsArray) => {
+  const setLinks = new Set();
+  linkObjectsArray.forEach((linkObj) => {
+    const link = linkObj.href;
+    setLinks.add(link);
+  });
+  return setLinks.size;
+}
+
 const cliPrintResults = (linksArray, options = {}) => {
   const { validate, stats } = options;
-  console.log(validate, stats);
-  
-  linksArray.forEach(linkElement => {
-    if(validate)
-      console.log(linkElement.file, linkElement.href, linkElement.status, linkElement.statusCode, linkElement.text);
-    else
-      console.log(linkElement.file, linkElement.href, linkElement.text);
-  });
+  if (stats) {
+    const total = linksArray.length;
+    const unique = countUniqueLinks(linksArray);
+    console.log('total:', total);
+    console.log('unique:', unique);
+  } else {
+    linksArray.forEach(linkElement => {
+      if (validate)
+        console.log(linkElement.file, linkElement.href, linkElement.status, linkElement.statusCode, linkElement.text);
+      else
+        console.log(linkElement.file, linkElement.href, linkElement.text);
+    });
+  }
 }
 
 const main = (args) => {
@@ -22,7 +36,7 @@ const main = (args) => {
     return 'Something went wrong';
   } else {
     const options = {}
-    
+
     const validArguments = ['validate', 'stats'];
 
     for (let i = 3; i < numArgs; i++) {
