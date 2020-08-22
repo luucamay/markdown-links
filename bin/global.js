@@ -2,7 +2,8 @@
 const mdLinks = require('../src/index');
 
 const cliPrintResults = (linksArray, options = {}) => {
-  const { validate } = options;
+  const { validate, stats } = options;
+  console.log(validate, stats);
   
   linksArray.forEach(linkElement => {
     if(validate)
@@ -22,7 +23,8 @@ const main = (args) => {
   } else {
     const options = {}
     
-    const validArguments = ['validate'];
+    const validArguments = ['validate', 'stats'];
+
     for (let i = 3; i < numArgs; i++) {
       const option = args[i].substring(2);
       if (!validArguments.includes(option)) {
