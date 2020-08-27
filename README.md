@@ -14,3 +14,4 @@ A npm package that checks links inside a markdown file
 - what structure should I use?
 - Do we still have user stories?
 - What would be the difference between using streams and callbacks?
+- What is the purpose of ```toMatchSnapshot```
