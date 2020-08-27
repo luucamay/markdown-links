@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const mdLinks = require('../src/index');
+const mdLinks = require('..');
 
 const countUniqueLinks = (linkObjectsArray) => {
   const setLinks = new Set();
