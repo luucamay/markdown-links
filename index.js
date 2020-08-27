@@ -1,10 +1,19 @@
 const pathSytem = require('path');
 const fs = require('fs');
-const { promises: filesystem } = require("fs");
 const marked = require('marked');
 const readdirp = require('readdirp');
 const got = require('got');
-const { getStatus } = require('./utils');
+
+const getStatus = (statCode) => {
+  const numDigits = statCode.toString().length;
+  if (numDigits !== 3)
+    return 'not valid status code';
+
+  if (statCode >= 200 && statCode < 400)
+    return 'ok';
+
+  return 'fail';
+}
 
 const convertToAbosulute = (pathToConvert) => {
   if (typeof pathToConvert !== 'string') {
