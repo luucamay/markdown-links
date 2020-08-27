@@ -1,4 +1,4 @@
-const pathSytem = require('path');
+const pathSystem = require('path');
 const fs = require('fs');
 const marked = require('marked');
 const readdirp = require('readdirp');
@@ -21,7 +21,7 @@ const convertToAbosulute = (pathToConvert) => {
     return '';
   }
 
-  const resolvedPath = pathSytem.resolve(pathToConvert);
+  const resolvedPath = pathSystem.resolve(pathToConvert);
   return resolvedPath;
 }
 
@@ -59,8 +59,6 @@ const processMarkdownFile = (pathToRead, options = {}, linksArray = []) => {
 
     fs.readFile(pathToRead, (err, data) => {
       if (err) {
-        console.error(err.message);
-        console.error(`Sorry I can't read file: ${pathToRead}`);
         return reject(err);
       }
       getLinks(data.toString(), pathToRead, linksArray);
@@ -136,10 +134,26 @@ const processAllFiles = (allFiles, options = {}) => {
 
 const mdLinks = (path, options = {}) => {
   return new Promise((resolve, reject) => {
-    console.log('Iniciando funcion mdLinks');
-
-    console.log(`Getting absolute path ...`);
-    path = convertToAbosulute(path);
+    // process path
+    if (isFolder(path)) {
+      getFiles(path)
+        .then((arrayFilePaths) => {
+          return processAllFiles(arrayFilePaths, options);
+        })
+        .then((mdLinksArray) => {
+          resolve(mdLinksArray);
+        })
+        .catch(reject);
+    } else {
+      processMarkdownFile(path, options)
+        .then(linksArray => {
+          resolve(linksArray);
+        })
+        .catch(e => {
+          reject(e);
+        })
+    }
+/*     path = convertToAbosulute(path);
 
     if (path === '') {
       console.log('Please use a valid path');
@@ -175,11 +189,9 @@ const mdLinks = (path, options = {}) => {
           })
       }
     } catch (e) {
-      console.error(e.message);
-      console.info('Please provide a valid PATH');
       reject('PATH provided does not exist')
     }
-
+ */
   });
 
 }
