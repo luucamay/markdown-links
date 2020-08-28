@@ -32,7 +32,10 @@ describe('mdLinks', () => {
       })
   ));
 
-  it.skip('should ignore non-markdown files', () => { });
+  it('should ignore non-markdown files', () => {
+    expect(mdLinks(path.join(fixtureDir, 'random-file'))).rejects.toThrow('Path is not a markdown fil');
+  });
+
   it.skip('should find links in a single file', () => { });
   it.skip('should recursively find links in a directory', () => { });
   it.skip('should find and validate links in a single file', () => { });

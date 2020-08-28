@@ -94,12 +94,14 @@ const getLinks = (markdownText, file, links = []) => {
 
 const getFiles = (path) => {
   return new Promise((resolveGetFiles, rejectGetFiles) => {
-    const allFilePaths = []
+    const allFilePaths = [];
+
     const settings = {
       fileFilter: '*.md',
       alwaysStat: true,
       directoryFilter: ['!.git', '!node_modules'],
     }
+
     readdirp(path, settings)
       .on('data', (entry) => {
         const filePath = entry.fullPath;
@@ -107,10 +109,7 @@ const getFiles = (path) => {
       })
       // Optionally call stream.destroy() in `warn()` in order to abort and cause 'close' to be emitted
       .on('warn', error => console.error('non-fatal error', error))
-      .on('error', error => {
-        console.error('fatal error', error);
-        rejectGetFiles(error);
-      })
+      .on('error', rejectGetFiles)
       .on('end', () => resolveGetFiles(allFilePaths));
   });
 }
@@ -132,8 +131,8 @@ const processAllFiles = (allFiles, options = {}) => {
   });
 }
 
-const mdLinks = (path, options = {}) => {
-  return new Promise((resolve, reject) => {
+const mdLinks = (path, options = {}) =>
+  new Promise((resolve, reject) => {
     // process path
     if (isFolder(path)) {
       getFiles(path)
@@ -145,41 +144,7 @@ const mdLinks = (path, options = {}) => {
         })
         .catch(reject);
     } else {
-      processMarkdownFile(path, options)
-        .then(linksArray => {
-          resolve(linksArray);
-        })
-        .catch(e => {
-          reject(e);
-        })
-    }
-/*     path = convertToAbosulute(path);
-
-    if (path === '') {
-      console.log('Please use a valid path');
-      reject('Invalid path');
-    }
-
-    console.info(`is ${path} file or folder?`);
-
-    try {
-      if (isFolder(path)) {
-        console.log('path is a folder');
-        getFiles(path)
-          .then((arrayFilePaths) => {
-            // console.log(arrayFilePaths);
-            return processAllFiles(arrayFilePaths, options);
-          })
-          .then((mdLinksArray) => {
-            resolve(mdLinksArray);
-          });
-      } else {
-        if (!path.endsWith('.md')) {
-          console.log("Sorry, I can't process a file with a extension different to .md")
-          reject('Invalid extension');
-        }
-
-        // the next function resolves in the future
+      if (path.endsWith('.md')) {
         processMarkdownFile(path, options)
           .then(linksArray => {
             resolve(linksArray);
@@ -187,13 +152,10 @@ const mdLinks = (path, options = {}) => {
           .catch(e => {
             reject(e);
           })
-      }
-    } catch (e) {
-      reject('PATH provided does not exist')
+      } else
+        reject(new Error("Path is not a markdown file"));
     }
- */
   });
 
-}
 
 module.exports = mdLinks;
