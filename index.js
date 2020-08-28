@@ -27,29 +27,22 @@ const convertToAbosulute = (pathToConvert) => {
 
 const isFolder = (pathToCheck) => fs.lstatSync(pathToCheck).isDirectory();
 
-const validateLinks = (linksObjArr) => {
-  console.log('validating links...')
-  return new Promise((fulfill, reject) => {
-    const requests = linksObjArr.map((linkObj) => {
-      const url = linkObj.href;
-      return got(url)
-        .then(response => {
-          const statusCode = response.statusCode;
-          linkObj.statusCode = statusCode;
-          linkObj.status = getStatus(statusCode);
-          return linkObj;
-        })
-        .catch(error => {
-          const statusCode = error.response.statusCode;
-          linkObj.statusCode = statusCode;
-          linkObj.status = getStatus(statusCode);
-          return error;
-        });
-    });
-
-    Promise.all(requests)
-      .then(fulfill)
-      .catch(reject)
+const validateLink = (linkObj) => {
+  return new Promise((fulfill) => {
+    const url = linkObj.href;
+    got(url)
+      .then(response => {
+        const statusCode = response.statusCode;
+        linkObj.statusCode = statusCode;
+        linkObj.status = getStatus(statusCode);
+        fulfill(linkObj);
+      })
+      .catch(error => {
+        let statusCode = error.response ? error.response.statusCode : 0;
+        linkObj.statusCode = statusCode;
+        linkObj.status = getStatus(statusCode);
+        fulfill(linkObj);
+      });
   })
 
 }
@@ -62,15 +55,12 @@ const processMarkdownFile = (pathToRead, options = {}, linksArray = []) => {
         return reject(err);
       }
       getLinks(data.toString(), pathToRead, linksArray);
-
       if (options.validate) {
-        return validateLinks(linksArray)
-          .then(fulfill)
-          .catch(reject);
+        const promises = linksArray.map(validateLink);
+        Promise.all(promises).then(fulfill);
+      } else {
+        fulfill(linksArray);
       }
-
-      fulfill(linksArray);
-      // return mycallback(pathToRead, linksArray);
     });
 
   });
@@ -118,16 +108,16 @@ const processAllFiles = (allFiles, options = {}) => {
   // here allFiles is the first time you get an array of markdown files
   return new Promise((resolveProcessFiles, rejectProcessFiles) => {
     if (allFiles.length === 0) {
-      const error = { 'message': 'There is no markdown files inside this folder' };
-      return rejectProcessFiles(error);
+      return rejectProcessFiles(new Error('There is no markdown files inside this folder'));
     }
     const mdlinksObjectsArray = [];
     const processingFiles = allFiles.map(file => processMarkdownFile(file, options, mdlinksObjectsArray));
 
-    Promise.all(processingFiles).then((filesobjects) => {
-      // console.log(mdlinksObjectsArray);
-      resolveProcessFiles(mdlinksObjectsArray)
-    });
+    Promise.all(processingFiles)
+      .then(() => {
+        resolveProcessFiles(mdlinksObjectsArray)
+      })
+      .catch(rejectProcessFiles);
   });
 }
 
