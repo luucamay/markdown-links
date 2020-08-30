@@ -1,4 +1,3 @@
-const pathSystem = require('path');
 const fs = require('fs');
 const marked = require('marked');
 const readdirp = require('readdirp');
@@ -13,16 +12,6 @@ const getStatus = (statCode) => {
     return 'ok';
 
   return 'fail';
-}
-
-const convertToAbosulute = (pathToConvert) => {
-  if (typeof pathToConvert !== 'string') {
-    console.log('Path provided is not a string');
-    return '';
-  }
-
-  const resolvedPath = pathSystem.resolve(pathToConvert);
-  return resolvedPath;
 }
 
 const isFolder = (pathToCheck) => fs.lstatSync(pathToCheck).isDirectory();
