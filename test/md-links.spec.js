@@ -1,7 +1,6 @@
 const path = require('path');
 const mdLinks = require('..');
 const got = require('got');
-const { link } = require('fs');
 
 jest.mock('got', () => jest.fn((url) => {
   // create an object that has the url as a key and the statuscode as a value?
@@ -15,15 +14,19 @@ describe('mdLinks', () => {
   const pathJoined = path.join(__dirname, 'fixtures');
   const fixtureDir = path.relative(currentWorkingDirectory, pathJoined);
 
-  it.skip('should throw when path is not a string', () => {
+  it('should throw when path is not a string', () => {
     expect(mdLinks()).rejects.toThrow('The \"path\" argument must be of type string or an instance of Buffer or URL. Received undefined');
   });
 
-  it.skip('should throw when path does not exist', () => {
+  it('should throw when path does not exist', () => {
     expect(mdLinks('foo')).rejects.toThrow('ENOENT');
   });
+  
+  it.only('should throw when file is not readable', () => {
+    expect(mdLinks(path.join(fixtureDir, 'not-allow-reading.md'))).rejects.toThrow('ENOENT');
+  });
 
-  it.skip('should find links in a single file', () => {
+  it('should find links in a single file', () => {
     mdLinks(path.join(fixtureDir, 'example1.md'))
       .then((links) => {
         expect(links.length).toBe(1);
@@ -31,7 +34,7 @@ describe('mdLinks', () => {
       })
   });
 
-  it.skip('should recursively find links in a directory', () => (
+  it('should recursively find links in a directory', () => (
     mdLinks(fixtureDir)
       .then((links) => {
         expect(links.length).toBe(10);
@@ -39,8 +42,9 @@ describe('mdLinks', () => {
       })
   ));
 
-  it.skip('should find and validate links in a single file', () => {
-    const newpath = path.join(__dirname, 'fixtures/example1.md');
+  it('should find and validate links in a single file', () => {
+    got.mockClear();
+    const newpath = path.join(fixtureDir, 'example1.md');
     const options = { validate: true };
     return mdLinks(newpath, options)
       .then((links) => {
@@ -53,9 +57,9 @@ describe('mdLinks', () => {
   });
 
 
-  it.skip('should find and validate links in another single file', () => {
+  it('should find and validate links in another single file', () => {
     got.mockClear();
-    const newpath = path.join(__dirname, 'fixtures/example2.md');
+    const newpath = path.join(fixtureDir, 'example2.md');
     const options = { validate: true };
     return mdLinks(newpath, options)
       .then((links) => {
@@ -64,11 +68,10 @@ describe('mdLinks', () => {
       })
   });
 
-  it.skip('should find and validate links in a directory', () => {
+  it('should find and validate links in a directory', () => {
     got.mockClear();
-    const newpath = path.join(__dirname, 'fixtures');
     const options = { validate: true };
-    return mdLinks(newpath, options)
+    return mdLinks(fixtureDir, options)
       .then((links) => {
         const total = 10;
         expect(links.length).toBe(total);
