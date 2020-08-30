@@ -17,6 +17,8 @@ const getStatus = (statCode) => {
 const isFolder = (pathToCheck) => fs.lstatSync(pathToCheck).isDirectory();
 
 const validateLink = (linkObj) => {
+  // maybe promise word is not necesary here
+  // TO DO check later
   return new Promise((fulfill) => {
     const url = linkObj.href;
     got(url)
@@ -36,27 +38,22 @@ const validateLink = (linkObj) => {
 
 }
 
-const processMarkdownFile = (pathToRead, options = {}, linksArray = []) => {
+const processMarkdownFile = (pathToRead) => {
   return new Promise((fulfill, reject) => {
-
     fs.readFile(pathToRead, (err, data) => {
       if (err) {
         return reject(err);
       }
-      getLinks(data.toString(), pathToRead, linksArray);
-      if (options.validate) {
-        const promises = linksArray.map(validateLink);
-        Promise.all(promises).then(fulfill);
-      } else {
-        fulfill(linksArray);
-      }
+      const linksArray = getLinks(data.toString(), pathToRead);
+      fulfill(linksArray)
     });
 
   });
 
 }
 
-const getLinks = (markdownText, file, links = []) => {
+const getLinks = (markdownText, file) => {
+  const links = [];
   var renderer = new marked.Renderer();
   renderer.link = function (href, title, text) {
     if (!href.startsWith('#')) {
@@ -72,6 +69,7 @@ const getLinks = (markdownText, file, links = []) => {
 }
 
 const getFiles = (path) => {
+  // TO DO check if promise word is needed here
   return new Promise((resolveGetFiles, rejectGetFiles) => {
     const allFilePaths = [];
 
@@ -93,17 +91,18 @@ const getFiles = (path) => {
   });
 }
 
-const processAllFiles = (allFiles, options = {}) => {
+const processAllFiles = (allFiles) => {
   // here allFiles is the first time you get an array of markdown files
   return new Promise((resolveProcessFiles, rejectProcessFiles) => {
     if (allFiles.length === 0) {
       return rejectProcessFiles(new Error('There is no markdown files inside this folder'));
     }
-    const mdlinksObjectsArray = [];
-    const processingFiles = allFiles.map(file => processMarkdownFile(file, options, mdlinksObjectsArray));
+
+    const processingFiles = allFiles.map(processMarkdownFile);
 
     Promise.all(processingFiles)
-      .then(() => {
+      .then((arrayOfArrays) => {
+        const mdlinksObjectsArray = arrayOfArrays.flat();
         resolveProcessFiles(mdlinksObjectsArray)
       })
       .catch(rejectProcessFiles);
@@ -115,22 +114,26 @@ const mdLinks = (path, options = {}) =>
     // process path
     if (isFolder(path)) {
       getFiles(path)
-        .then((arrayFilePaths) => {
-          return processAllFiles(arrayFilePaths, options);
-        })
-        .then((mdLinksArray) => {
-          resolve(mdLinksArray);
+        .then(processAllFiles)
+        .then((linksArray) => {
+          if (options.validate) {
+            const linkStatusArr = linksArray.map(validateLink)
+            return Promise.all(linkStatusArr).then(resolve);
+          }
+          return resolve(linksArray);
         })
         .catch(reject);
     } else {
       if (path.endsWith('.md')) {
-        processMarkdownFile(path, options)
+        processMarkdownFile(path)
           .then(linksArray => {
-            resolve(linksArray);
+            if (options.validate) {
+              const linkStatusArr = linksArray.map(validateLink)
+              return Promise.all(linkStatusArr).then(resolve);
+            }
+            return resolve(linksArray);
           })
-          .catch(e => {
-            reject(e);
-          })
+          .catch(reject)
       } else
         reject(new Error("Path is not a markdown file"));
     }

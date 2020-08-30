@@ -1,27 +1,15 @@
 const path = require('path');
 const mdLinks = require('..');
 const got = require('got');
+const { link } = require('fs');
 
 jest.mock('got', () => jest.fn((url) => {
   // create an object that has the url as a key and the statuscode as a value?
-  if(url==='http://this-should-not-work.local/oh/my/god')
+  if (url === 'http://this-should-not-work.local/oh/my/god')
     return Promise.reject(new Error('Link not reachable'))
   return Promise.resolve({ statusCode: 200 })
 }));
-/* const mockGot = jest.fn((url) => {
-  console.log(url);
-  return Promise.resolve({ statusCode: 200 })
-});
 
-global.got = mockGot; */
-/* beforeEach(() => {
-  got.mockClear();
-}); */
-
-/* got.mockResolvedValue({
-  statusCode: 'ok'
-})
- */
 describe('mdLinks', () => {
   const currentWorkingDirectory = process.cwd();
   const pathJoined = path.join(__dirname, 'fixtures');
@@ -74,35 +62,23 @@ describe('mdLinks', () => {
         expect(links.length).toBe(4);
         expect(got).toHaveBeenCalledTimes(4);
       })
-      .catch((err) => {
-        expect(err.message).toBe('error');
-      })
   });
 
-  it.skip('should validate links in a directory', () => {
-    got.__('https://es.wikipedia.org/wiki/Markdown', { statusCode: 200 });
-    got.__('https://nodejs.org/es/', { statusCode: 200 });
-    got.__('https://www.npmjs.com/', { statusCode: 200 });
-    got.__('http://this-should-not-work.local/oh/my/god', new Error('OMG'));
-
+  it.skip('should find and validate links in a directory', () => {
+    got.mockClear();
     const newpath = path.join(__dirname, 'fixtures');
     const options = { validate: true };
-    mdLinks(newpath, options)
+    return mdLinks(newpath, options)
       .then((links) => {
-        console.log(links);
-        expect(links.length).toBe(10);
-      })
-      .catch((err) => {
-        expect(err.message).toBe('error');
+        const total = 10;
+        expect(links.length).toBe(total);
+        expect(got).toHaveBeenCalledTimes(total);
       })
   });
 
 
-  it.skip('should ignore non-markdown files', () => {
-    expect(mdLinks(path.join(fixtureDir, 'random-file'))).rejects.toThrow('Path is not a markdown fil');
+  it('should ignore non-markdown files', () => {
+    expect(mdLinks(path.join(fixtureDir, 'random-file'))).rejects.toThrow('Path is not a markdown file');
   });
-
-  it.skip('should find and validate links in a single file', () => { });
-  it.skip('should recursively find and validate links in a dir', () => { });
 
 });
