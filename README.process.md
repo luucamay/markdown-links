@@ -88,25 +88,25 @@ It is hard to **figure out where to start**
 ### `README.md`
 
 * [x] Un board con el backlog para la implementación de la librería.
-* [ ] Documentación técnica de la librería.
-* [ ] Guía de uso e instalación de la librería
+* [x] Documentación técnica de la librería.
+* [x] Guía de uso e instalación de la librería
 
 ### API `mdLinks(path, opts)`
 
-* [ ] El módulo exporta una función con la interfaz (API) esperada.
-* [ ] Implementa soporte para archivo individual
-* [ ] Implementa soporte para directorios
-* [ ] Implementa `options.validate`
+* [x] El módulo exporta una función con la interfaz (API) esperada.
+* [x] Implementa soporte para archivo individual
+* [X] Implementa soporte para directorios
+* [x] Implementa `options.validate`
 
 ### CLI
 
-* [ ] Expone ejecutable `md-links` en el path (configurado en `package.json`)
-* [ ] Se ejecuta sin errores / output esperado
-* [ ] Implementa `--validate`
-* [ ] Implementa `--stats`
+* [x] Expone ejecutable `md-links` en el path (configurado en `package.json`)
+* [X] Se ejecuta sin errores / output esperado
+* [x] Implementa `--validate`
+* [x] Implementa `--stats`
 
 ### Pruebas / tests
 
-* [ ] Pruebas unitarias cubren un mínimo del 70% de statements, functions,
+* [x] Pruebas unitarias cubren un mínimo del 70% de statements, functions,
   lines, y branches.
-* [ ] Pasa tests (y linters) (`npm test`).
+* [x] Pasa tests (y linters) (`npm test`).
