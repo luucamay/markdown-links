@@ -70,24 +70,17 @@ const getLinks = (markdownText, file) => {
 
 const getFiles = (path) => {
   // TO DO check if promise word is needed here
-  return new Promise((resolveGetFiles, rejectGetFiles) => {
-    const allFilePaths = [];
+  const allFilePaths = [];
 
-    const settings = {
-      fileFilter: '*.md',
-      alwaysStat: true,
-      directoryFilter: ['!.git', '!node_modules'],
-    }
+  const settings = {
+    fileFilter: '*.md',
+    alwaysStat: true,
+    directoryFilter: ['!.git', '!node_modules'],
+  }
 
-    readdirp(path, settings)
-      .on('data', (entry) => {
-        const filePath = entry.fullPath;
-        allFilePaths.push(filePath);
-      })
-      // Optionally call stream.destroy() in `warn()` in order to abort and cause 'close' to be emitted
-      .on('error', rejectGetFiles)
-      .on('end', () => resolveGetFiles(allFilePaths));
-  });
+  return readdirp.promise(path, settings)
+    .then(fileObjects => fileObjects.map(file => file.fullPath))
+
 }
 
 const processAllFiles = (allFiles) => {
