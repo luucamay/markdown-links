@@ -34,7 +34,7 @@ describe('mdLinks', () => {
       })
   });
 
-  it('should throw when directory does not have reading permissions', () => {
+  it('should throw when directory is empty', () => {
     expect(mdLinks(path.join(fixtureDir, 'empty_folder'))).rejects.toThrow('There is no markdown files inside this folder');
   });
 
