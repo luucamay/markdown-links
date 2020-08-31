@@ -113,10 +113,6 @@ const processAllFiles = (allFiles) => {
           rejectProcessFiles(new Error('Any file has not been posbile to read'));
         resolveProcessFiles(mdlinksObjectsArray);
       })
-      .catch((error) => {
-        console.log(error);
-      
-      });
   });
 }
 

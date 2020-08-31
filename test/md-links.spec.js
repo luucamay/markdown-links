@@ -14,19 +14,19 @@ describe('mdLinks', () => {
   const pathJoined = path.join(__dirname, 'fixtures');
   const fixtureDir = path.relative(currentWorkingDirectory, pathJoined);
 
-  it.skip('should throw when path is not a string', () => {
+  it('should throw when path is not a string', () => {
     expect(mdLinks()).rejects.toThrow('The \"path\" argument must be of type string or an instance of Buffer or URL. Received undefined');
   });
 
-  it.skip('should throw when path does not exist', () => {
+  it('should throw when path does not exist', () => {
     expect(mdLinks('foo')).rejects.toThrow('ENOENT');
   });
 
-  it.skip('should throw when file is not readable', () => {
+  it('should throw when file is not readable', () => {
     expect(mdLinks(path.join(fixtureDir, 'not-allow-reading.md'))).rejects.toThrow('EACCES');
   });
 
-  it.skip('should find links in a single file', () => {
+  it('should find links in a single file', () => {
     mdLinks(path.join(fixtureDir, 'example1.md'))
       .then((links) => {
         expect(links.length).toBe(1);
@@ -38,6 +38,10 @@ describe('mdLinks', () => {
     expect(mdLinks(path.join(fixtureDir, 'empty_folder'))).rejects.toThrow('There is no markdown files inside this folder');
   });
 
+  it('should throw when directory does not have reading permissions', () => {
+    expect(mdLinks(path.join(fixtureDir, 'not_allow_folder'))).rejects.toThrow('Any file has not been posbile to read');
+  });
+
   it('should recursively find links in a directory', () => (
     mdLinks(fixtureDir)
       .then((links) => {
@@ -46,7 +50,7 @@ describe('mdLinks', () => {
       })
   ));
 
-  it.skip('should find and validate links in a single file', () => {
+  it('should find and validate links in a single file', () => {
     got.mockClear();
     const newpath = path.join(fixtureDir, 'example1.md');
     const options = { validate: true };
@@ -61,7 +65,7 @@ describe('mdLinks', () => {
   });
 
 
-  it.skip('should find and validate links in another single file', () => {
+  it('should find and validate links in another single file', () => {
     got.mockClear();
     const newpath = path.join(fixtureDir, 'example2.md');
     const options = { validate: true };
@@ -84,7 +88,7 @@ describe('mdLinks', () => {
   });
 
 
-  it.skip('should ignore non-markdown files', () => {
+  it('should ignore non-markdown files', () => {
     expect(mdLinks(path.join(fixtureDir, 'random-file'))).rejects.toThrow('Path is not a markdown file');
   });
 
