@@ -14,19 +14,19 @@ describe('mdLinks', () => {
   const pathJoined = path.join(__dirname, 'fixtures');
   const fixtureDir = path.relative(currentWorkingDirectory, pathJoined);
 
-  it('should throw when path is not a string', () => {
+  it.skip('should throw when path is not a string', () => {
     expect(mdLinks()).rejects.toThrow('The \"path\" argument must be of type string or an instance of Buffer or URL. Received undefined');
   });
 
-  it('should throw when path does not exist', () => {
+  it.skip('should throw when path does not exist', () => {
     expect(mdLinks('foo')).rejects.toThrow('ENOENT');
   });
   
-  it.only('should throw when file is not readable', () => {
-    expect(mdLinks(path.join(fixtureDir, 'not-allow-reading.md'))).rejects.toThrow('ENOENT');
+  it('should throw when file is not readable', () => {
+    expect(mdLinks(path.join(fixtureDir, 'not-allow-reading.md'))).rejects.toThrow('EACCES');
   });
 
-  it('should find links in a single file', () => {
+  it.skip('should find links in a single file', () => {
     mdLinks(path.join(fixtureDir, 'example1.md'))
       .then((links) => {
         expect(links.length).toBe(1);
@@ -42,7 +42,7 @@ describe('mdLinks', () => {
       })
   ));
 
-  it('should find and validate links in a single file', () => {
+  it.skip('should find and validate links in a single file', () => {
     got.mockClear();
     const newpath = path.join(fixtureDir, 'example1.md');
     const options = { validate: true };
@@ -57,7 +57,7 @@ describe('mdLinks', () => {
   });
 
 
-  it('should find and validate links in another single file', () => {
+  it.skip('should find and validate links in another single file', () => {
     got.mockClear();
     const newpath = path.join(fixtureDir, 'example2.md');
     const options = { validate: true };
@@ -80,7 +80,7 @@ describe('mdLinks', () => {
   });
 
 
-  it('should ignore non-markdown files', () => {
+  it.skip('should ignore non-markdown files', () => {
     expect(mdLinks(path.join(fixtureDir, 'random-file'))).rejects.toThrow('Path is not a markdown file');
   });
 

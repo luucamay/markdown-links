@@ -85,7 +85,6 @@ const getFiles = (path) => {
         allFilePaths.push(filePath);
       })
       // Optionally call stream.destroy() in `warn()` in order to abort and cause 'close' to be emitted
-      .on('warn', error => console.error('non-fatal error', error))
       .on('error', rejectGetFiles)
       .on('end', () => resolveGetFiles(allFilePaths));
   });
@@ -98,14 +97,26 @@ const processAllFiles = (allFiles) => {
       return rejectProcessFiles(new Error('There is no markdown files inside this folder'));
     }
 
-    const processingFiles = allFiles.map(processMarkdownFile);
+    const processingFiles = allFiles.map(filePath => {
+      return processMarkdownFile(filePath)
+        .catch((err) => {
+          console.log(`Can't access ${filePath}, please check it later`);
+          console.log(err);
+          return [];
+        });
+    });
 
     Promise.all(processingFiles)
       .then((arrayOfArrays) => {
         const mdlinksObjectsArray = arrayOfArrays.flat();
-        resolveProcessFiles(mdlinksObjectsArray)
+        if (mdlinksObjectsArray.length === 0)
+          rejectProcessFiles(new Error('Any file has not been posbile to read'));
+        resolveProcessFiles(mdlinksObjectsArray);
       })
-      .catch(rejectProcessFiles);
+      .catch((error) => {
+        console.log(error);
+      
+      });
   });
 }
 
