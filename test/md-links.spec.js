@@ -21,9 +21,9 @@ describe('mdLinks', () => {
   it('should throw when path does not exist', () => {
     expect(mdLinks('foo')).rejects.toThrow('ENOENT');
   });
-  
-  it.only('should throw when file is not readable', () => {
-    expect(mdLinks(path.join(fixtureDir, 'not-allow-reading.md'))).rejects.toThrow('ENOENT');
+
+  it('should throw when file is not readable', () => {
+    expect(mdLinks(path.join(fixtureDir, 'not-allow-reading.md'))).rejects.toThrow('EACCES');
   });
 
   it('should find links in a single file', () => {
@@ -32,6 +32,14 @@ describe('mdLinks', () => {
         expect(links.length).toBe(1);
         expect(links).toMatchSnapshot();
       })
+  });
+
+  it('should throw when directory does not have reading permissions', () => {
+    expect(mdLinks(path.join(fixtureDir, 'empty_folder'))).rejects.toThrow('There is no markdown files inside this folder');
+  });
+
+  it('should throw when directory does not have reading permissions', () => {
+    expect(mdLinks(path.join(fixtureDir, 'not_allow_folder'))).rejects.toThrow('Any file has not been posbile to read');
   });
 
   it('should recursively find links in a directory', () => (
