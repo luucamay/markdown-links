@@ -22,7 +22,7 @@ describe('mdLinks', () => {
     expect(mdLinks('foo')).rejects.toThrow('ENOENT');
   });
 
-  it('should throw when file is not readable', () => {
+  it.skip('should throw when file is not readable', () => {
     expect(mdLinks(path.join(fixtureDir, 'not-allow-reading.md'))).rejects.toThrow('EACCES');
   });
 
@@ -34,7 +34,7 @@ describe('mdLinks', () => {
       })
   });
 
-  it.skip('should throw when directory is empty', () => {
+  it('should throw when directory is empty', () => {
     expect(mdLinks(path.join(fixtureDir, 'empty_folder'))).rejects.toThrow('There is no markdown files inside this folder');
   });
 
@@ -50,7 +50,7 @@ describe('mdLinks', () => {
       })
   ));
 
-  it.only('should find and validate links in a single file', () => {
+  it('should find and validate links in a single file', () => {
     got.mockClear();
     const newpath = path.join(fixtureDir, 'example1.md');
     const options = { validate: true };

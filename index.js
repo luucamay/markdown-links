@@ -16,27 +16,20 @@ const getStatus = (statCode) => {
 
 const isFolder = (pathToCheck) => fs.lstatSync(pathToCheck).isDirectory();
 
-const validateLink = (linkObj) => {
-  // maybe promise word is not necesary here
-  // TO DO check later
-  return new Promise((fulfill) => {
-    const url = linkObj.href;
-    got(url)
+const validateLink = (linkObj) =>
+    got(linkObj.href)
       .then(response => {
         const statusCode = response.statusCode;
         linkObj.statusCode = statusCode;
         linkObj.status = getStatus(statusCode);
-        fulfill(linkObj);
+        return linkObj;
       })
       .catch(error => {
         let statusCode = error.response ? error.response.statusCode : 0;
         linkObj.statusCode = statusCode;
         linkObj.status = getStatus(statusCode);
-        fulfill(linkObj);
+        return linkObj;
       });
-  })
-
-}
 
 const processMarkdownFile = (pathToRead) => {
   return new Promise((fulfill, reject) => {
@@ -47,9 +40,7 @@ const processMarkdownFile = (pathToRead) => {
       const linksArray = getLinks(data.toString(), pathToRead);
       fulfill(linksArray)
     });
-
   });
-
 }
 
 const getLinks = (markdownText, file) => {
@@ -69,7 +60,6 @@ const getLinks = (markdownText, file) => {
 }
 
 const getFiles = (path) => {
-  // TO DO check if promise word is needed here
   const allFilePaths = [];
 
   const settings = {
