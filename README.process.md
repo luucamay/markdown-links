@@ -12,6 +12,10 @@ A npm package that checks links inside a markdown file
 - [laboratoria video about jest with mocks firebase](https://www.youtube.com/watch?v=06myVn41OTY)
 - [Jest cheatsheet](https://devhints.io/jest)
 - [About mocks](https://dev.to/jenniferlynparsons/a-bit-about-jest-mocks-2o7k)
+- [Promises, async/await, explanation and tasks](https://javascript.info/async)
+- [Eloquent Javascript](https://eloquentjavascript.net/11_async.html)
+- [Another sexercise for asyncronous JS](https://gist.github.com/CrabDude/30065a68992cb88f7ec07265c3f95a4e)
+- [Async exercises](https://github.com/Mathias54/async-exercises)
 
 ## Questions
 - how should we test our updates? Currently doing ```npm unlink ``` and ```npm link```
@@ -110,3 +114,10 @@ It is hard to **figure out where to start**
 * [x] Pruebas unitarias cubren un mínimo del 70% de statements, functions,
   lines, y branches.
 * [x] Pasa tests (y linters) (`npm test`).
+
+
+## Q&A Lupo
+Una vez que tenemos la informacion se va a llenar la memoria de en un buffer porque solo esta llenandose toda la memoria.
+
+Es por eso que usamos streams porque los procesos en unix son streams, el input de una cosa se puede conectar al siguiente.
+  * Normalmente un stream tien 8k
